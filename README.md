@@ -111,12 +111,15 @@ Ajustar configurações de timeout e corrigir erro de timeout execedido ao invoc
 ![Screen Shot 2024-09-13 at 21 42 04](https://github.com/user-attachments/assets/a451d1a1-ef3f-4116-8ab0-246d6548b7a3)
 
 ```
-// INSIRA SUA ANÁLISE OU PARECER ABAIXO
 
+A função ``externalService`` retorna uma promise após 5000 ms (5 segundos)
+A função `timeoutPromise` cria uma promise que retorna um erro `'Tempo limite excedido!'` caso o tempo de espera ultrapasse o tempo passado como parâmetro
 
+Assim, para que o código funcione, o tempo passado como parâmetro na linha `const result = await timeoutPromise(5500, externalService());` (linha 42) deve ser superior ao tempo de timeout da função `externalService`. Ou seja, o parâmetro passado deve ser maior que 5000.
 
 ```
 
+![](./images/01_server_run.png "Timeout server run")
 
 ---
 ### 2.2 Rate Limit
@@ -178,12 +181,16 @@ Alterar limite de requisições permitidas para 100 num intervalo de 1 minuto e 
 
 
 ```
-// INSIRA SUA ANÁLISE OU PARECER ABAIXO
+Foi feita uma função no arquivo `simulateRateLimitError`
 
+Essa função tem um laço for que faz uma chamada repetida ao endpoint a fim de estourar o rate limit
 
-
+A quantidade de chamadas é representada pelo parâmetro max que foi definido em 100, assim como no arquivo `server-ratelimit`
 ```
 
+![](./images/02_rate_limit_server_run.png "Rate limit server run")
+![](./images/03_rate_limit_server_achieved.png "Rate limit VSCode")
+![](./images/04_rate_limit_server_achieved_browser.png "Rate limit browser")
 
 ---
 ### 2.3 Bulkhead
@@ -245,12 +252,14 @@ Aumentar quantidade de chamadas simultâneas e avaliar o comportamento.
 
 
 ```
-// INSIRA SUA ANÁLISE OU PARECER ABAIXO
+Aumentar o parâmetro do bulkhead() faz com que mais conexões sejam permitidas ao mesmo tempo
 
-
-
+É importante calibrar corretamente esse valor afim de evitar ataques DDOS e utilizar dos balanceadores de carga.
 ```
 
+![](./images/05_bulkhead_run.png "Bulkhead run")
+![](./images/06_bulkhead_error.png "Bulkhead error")
+![](./images/07_bulkhead_higher.png "Bulkhead modified")
 
 ---
 ### 2.4 Circuit Breaker
@@ -326,11 +335,17 @@ Ajustar o o percentual de falhas para que o circuit breaker obtenha sucesso ao r
 Observar comportamento do circuito no console.
 
 ```
-// INSIRA SUA ANÁLISE OU PARECER ABAIXO
+A função externalService() simula a chamada de um serviço externo que tem um tempo de resposta de 2000ms (2 segundos) e 20% de chance de falha
 
+As outras funções são para definir rota e configurar o Circuit Breaker
 
+Ajustar o Circuit Breaker para que obtenha chance de abrir significa alterar o parâmetro shouldFail da função externalService(), esse parâmetro foi modificado de 0.8 para 0.5.
+
+Isso significa que a taxa de falha foi de 20% para 50%.
 
 ```
+
+![](./images/08_circuit_breaker_run.png "")
 
 ---
 ### 2.5 Health Check
@@ -420,6 +435,9 @@ curl http://localhost:8080/health/readiness
 ```sh
 Readiness check passed
 ```
+
+![](./images/09_health_check_run.png "Health check run")
+
 #### 2.5.1 Exemplo de configuração de Probes no Kubernetes (Opcional)
 Para utilizar esses endpoints como probes no Kubernetes, você pode configurar o `deployment.yaml` da seguinte maneira:
 
